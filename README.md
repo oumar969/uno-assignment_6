@@ -1,36 +1,46 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+UNO Assignment 6 – Next.js SSR
 
-## Getting Started
-
-First, run the development server:
+## Run the app
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev        # http://localhost:3000
+npm run build
+npm run start
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Env vars
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Create `.env.local`:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+NEXT_PUBLIC_GRAPHQL_HTTP=http://localhost:4000/graphql
+NEXT_PUBLIC_GRAPHQL_WS=ws://localhost:4001/graphql
+```
 
-## Learn More
+## Rendering choices (SSR vs client)
 
-To learn more about Next.js, take a look at the following resources:
+- Home (`/`): static (`dynamic = "force-static"`).
+- Lobby (`/lobby`): server component fetch with `cache: "no-store"` (fresh SSR HTML), then client component for interactions.
+- Game (`/game/[id]`): server-prefetch of initial game state, then client hydration + live subscription via GraphQL WS + RxJS.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## State & hydration
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Redux holds player/game state; Apollo + RxJS feed updates.
+- Provider tree (`app/providers/Providers.tsx`) is client-only; server pages pass prefetched data into client components to avoid hydration mismatch.
 
-## Deploy on Vercel
+## API
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- By default the app talks to the existing GraphQL server on ports 4000/4001.
+- If you want the API inside Next, move the schema/resolvers into `app/api` (Could-have) and point env vars to `http://localhost:3000/api/graphql`.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Pages of interest
+
+- `app/lobby/page.tsx` (server) + `app/lobby/LobbyClient.tsx` (client)
+- `app/game/[id]/page.tsx` (server fetch) + `app/game/[id]/GameClient.tsx` (client UI + subscriptions)
+- `app/page.tsx` landing with rendering rationale
+
+## Testing notes
+
+- Ensure your GraphQL backend is running on 4000/4001 before `npm run dev`.
+- For build/start, keep the backend running separately or adjust env vars to a hosted endpoint.
