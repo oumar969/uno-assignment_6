@@ -3,8 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useDispatch } from "react-redux";
 import { setPlayerId } from "../lib/redux/playerSlice";
-import { GET_GAMES, apiCreateGame, apiJoinGame } from "../lib/api/uno";
-import { createApolloClient } from "../lib/apollo/client";
+import { apiCreateGame, apiJoinGame, apiGetGames } from "../lib/api/uno";
 
 type Game = { id: string; players: { id: string; name: string }[] };
 
@@ -17,9 +16,8 @@ export default function LobbyClient({ initialGames, backendDown }: { initialGame
   async function refresh() {
     setLoading(true);
     try {
-      const client = createApolloClient();
-      const result = await client.query({ query: GET_GAMES, fetchPolicy: "no-cache" });
-      setGames((result.data as { games: Game[] }).games);
+      const result = await apiGetGames();
+      setGames(result);
     } finally {
       setLoading(false);
     }
@@ -60,7 +58,7 @@ export default function LobbyClient({ initialGames, backendDown }: { initialGame
 
       {backendDown && (
         <p style={{ color: "#c0392b" }}>
-          Backend unreachable at {process.env.NEXT_PUBLIC_GRAPHQL_HTTP || "http://localhost:4000/graphql"}. Start the server and refresh.
+          Backend unreachable. Check if the Next.js server is running.
         </p>
       )}
 

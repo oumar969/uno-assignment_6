@@ -1,45 +1,36 @@
 import GameClient from "./GameClient";
+import { getGame } from "@/app/lib/gameStore";
+import { Uno } from "@/app/lib/uno";
 
 export const dynamic = "force-dynamic";
 
-async function fetchGame(id: string) {
-  const endpoint = process.env.NEXT_PUBLIC_GRAPHQL_HTTP || "http://localhost:4000/graphql";
-  try {
-    const res = await fetch(endpoint, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        query: `query Game($id: ID!) {
-          game(id: $id) {
-            id
-            winner
-            activeColor
-            direction
-            currentPlayer { id name }
-            topCard { color type value }
-            players {
-              id
-              name
-              handCount
-              hand { color type value back }
-            }
-          }
-        }`,
-        variables: { id },
-      }),
-      cache: "no-store",
-    });
+function serializeGame(game: { id: string; players: any[]; state: Uno }) {
+  const topCard = game.state.discardPile[game.state.discardPile.length - 1];
+  const currentPlayer = game.state.players[game.state.currentPlayer];
 
-    if (!res.ok) throw new Error(`Failed to load game ${id}: ${res.status}`);
-    const json = await res.json();
-    return { game: json.data?.game ?? null, backendDown: false };
-  } catch (err) {
-    console.error("Game fetch failed", err);
-    return { game: null, backendDown: true };
-  }
+  return {
+    id: game.id,
+    winner: game.state.winner,
+    topCard: topCard || null,
+    activeColor: game.state.activeColor,
+    direction: game.state.direction,
+    currentPlayer: currentPlayer
+      ? { id: currentPlayer.id, name: currentPlayer.name }
+      : null,
+    players: game.state.players.map((p) => ({
+      id: p.id,
+      name: p.name,
+      hand: p.hand,
+      handCount: p.hand.length,
+    })),
+  };
 }
 
-export default async function GamePage({ params }: { params: { id: string } }) {
-  const { game, backendDown } = await fetchGame(params.id);
-  return <GameClient gameId={params.id} initialGame={game} backendDown={backendDown} />;
+export default async function GamePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const gameData = getGame(id);
+  
+  // Always render the client - it will fetch via SSE if needed
+  const game = gameData ? serializeGame(gameData) : null;
+  return <GameClient gameId={id} initialGame={game} backendDown={false} />;
 }

@@ -19,8 +19,11 @@ export default function GameClient({ gameId, initialGame, backendDown }: { gameI
   useEffect(() => {
     if (initialGame) {
       dispatch(setGame(initialGame));
+    } else if (!backendDown) {
+      // If no initial game but backend is up, try to fetch it
+      console.warn("No initial game provided, will fetch from stream");
     }
-  }, [initialGame, dispatch]);
+  }, [initialGame, dispatch, backendDown]);
 
   // start live subscription stream
   useEffect(() => {
@@ -32,13 +35,21 @@ export default function GameClient({ gameId, initialGame, backendDown }: { gameI
       <div>
         <h2>UNO Game</h2>
         <p style={{ color: "#c0392b" }}>
-          Backend unreachable at {process.env.NEXT_PUBLIC_GRAPHQL_HTTP || "http://localhost:4000/graphql"}. Start the server and refresh.
+          Backend unreachable. Start the Next.js server and refresh.
         </p>
       </div>
     );
   }
 
-  if (!game) return <p>Loading game...</p>;
+  // If initialGame is null but backend is fine, wait for SSE stream to load it
+  if (!game) {
+    return (
+      <div>
+        <h2>UNO Game {gameId}</h2>
+        <p>Loading game...</p>
+      </div>
+    );
+  }
 
   function play(card: any, index: number) {
     if (!playerId) {

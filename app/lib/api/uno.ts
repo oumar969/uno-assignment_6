@@ -1,118 +1,104 @@
-import { gql } from "@apollo/client";
-import { createApolloClient } from "../apollo/client";
+// REST API client for UNO game (replaces GraphQL)
 
-const apolloClient = createApolloClient();
-
-// ---- QUERIES ----
-export const GET_GAMES = gql`
-  query {
-    games {
-      id
-      players { id name }
-    }
+function getPlayerId() {
+  if (typeof window !== "undefined") {
+    return localStorage.getItem("myPlayerId") || "";
   }
-`;
-
-export const GET_GAME = gql`
-  query Game($id: ID!) {
-    game(id: $id) {
-      id
-      winner
-      topCard { color type value }
-      activeColor
-      currentPlayer { id name }
-      players {
-        id
-        name
-        hand { color type value back }
-        handCount
-      }
-    }
-  }
-`;
-
-const CREATE_GAME = gql`
-  mutation {
-    createGame { id }
-  }
-`;
-
-const JOIN_GAME = gql`
-  mutation Join($gameId: ID!, $name: String!) {
-    joinGame(gameId: $gameId, name: $name) {
-      game { id players { id name } }
-      viewerId
-    }
-  }
-`;
-
-const PLAY_CARD = gql`
-  mutation Play(
-    $gameId: ID!,
-    $playerId: ID!,
-    $cardIndex: Int!,
-    $chosenColor: String
-  ) {
-    playCard(
-      gameId: $gameId,
-      playerId: $playerId,
-      cardIndex: $cardIndex,
-      chosenColor: $chosenColor
-    ) {
-      id
-      winner
-      activeColor
-      topCard { color type value }
-      players {
-        id name
-        hand { color type value back }
-      }
-    }
-  }
-`;
-
-const DRAW_CARD = gql`
-  mutation Draw($gameId: ID!, $playerId: ID!) {
-    drawCard(gameId: $gameId, playerId: $playerId) {
-      id
-      topCard { color type value }
-      players {
-        id name
-        hand { color type value }
-      }
-    }
-  }
-`;
+  return "";
+}
 
 export async function apiCreateGame() {
-  const res = await apolloClient.mutate({ mutation: CREATE_GAME });
-  return (res.data as any).createGame;
+  const res = await fetch("/api/games/create", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+  });
+
+  if (!res.ok) throw new Error("Failed to create game");
+  return await res.json();
 }
 
 export async function apiJoinGame(gameId: string, name: string) {
-  const res = await apolloClient.mutate({
-    mutation: JOIN_GAME,
-    variables: { gameId, name },
+  const playerId = getPlayerId();
+  
+  const res = await fetch(`/api/games/${gameId}/join`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-player-id": playerId,
+    },
+    body: JSON.stringify({ name }),
   });
-  const payload = (res.data as any).joinGame;
-  if (payload?.viewerId && typeof window !== "undefined") {
-    localStorage.setItem("myPlayerId", payload.viewerId);
+
+  if (!res.ok) throw new Error("Failed to join game");
+  
+  const data = await res.json();
+  
+  if (data.viewerId && typeof window !== "undefined") {
+    localStorage.setItem("myPlayerId", data.viewerId);
   }
-  return payload?.game;
+  
+  return data.game;
 }
 
-export async function apiPlayCard(gameId: string, playerId: string, cardIndex: number, chosenColor?: string) {
-  const res = await apolloClient.mutate({
-    mutation: PLAY_CARD,
-    variables: { gameId, playerId, cardIndex, chosenColor },
+export async function apiPlayCard(
+  gameId: string,
+  playerId: string,
+  cardIndex: number,
+  chosenColor?: string
+) {
+  const res = await fetch(`/api/games/${gameId}/play`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-player-id": playerId,
+    },
+    body: JSON.stringify({ playerId, cardIndex, chosenColor }),
   });
-  return (res.data as any).playCard;
+
+  if (!res.ok) {
+    const error = await res.json();
+    throw new Error(error.error || "Failed to play card");
+  }
+  
+  return await res.json();
 }
 
 export async function apiDrawCard(gameId: string, playerId: string) {
-  const res = await apolloClient.mutate({
-    mutation: DRAW_CARD,
-    variables: { gameId, playerId },
+  const res = await fetch(`/api/games/${gameId}/draw`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-player-id": playerId,
+    },
+    body: JSON.stringify({ playerId }),
   });
-  return (res.data as any).drawCard;
+
+  if (!res.ok) {
+    const error = await res.json();
+    throw new Error(error.error || "Failed to draw card");
+  }
+  
+  return await res.json();
+}
+
+export async function apiGetGames() {
+  const res = await fetch("/api/games", {
+    cache: "no-store",
+  });
+
+  if (!res.ok) throw new Error("Failed to get games");
+  
+  const data = await res.json();
+  return data.games;
+}
+
+export async function apiGetGame(gameId: string) {
+  const res = await fetch(`/api/games/${gameId}`, {
+    cache: "no-store",
+  });
+
+  if (!res.ok) throw new Error("Failed to get game");
+  
+  const data = await res.json();
+  return data.game;
 }
