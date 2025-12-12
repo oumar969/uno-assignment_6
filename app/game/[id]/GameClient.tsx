@@ -1,47 +1,22 @@
 "use client";
-import React, { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "../../lib/redux/store";
-import { setGame } from "../../lib/redux/gameSlice";
-import { apiPlayCard, apiDrawCard } from "../../lib/api/uno";
-import { startGameStream } from "../../rx/gameStream";
+import React from "react";
+import { useSearchParams } from "next/navigation";
+import { useMutation, useSubscription } from "@apollo/client";
+import { DRAW_CARD, PLAY_CARD, GAME_UPDATED, SAY_UNO } from "../../lib/operations";
 import Hand from "../../components/Hand";
 import Card from "../../components/Card";
 
-type GameState = any;
+export default function GameClient({ gameId }: { gameId: string }) {
+  const params = useSearchParams();
+  const playerId = params.get("viewerId") || "";
 
-export default function GameClient({ gameId, initialGame, backendDown }: { gameId: string; initialGame: GameState; backendDown?: boolean }) {
-  const dispatch = useDispatch();
-  const game = useSelector((s: RootState) => s.game.current);
-  const playerId = useSelector((s: RootState) => s.player.id);
+  const { data: subData } = useSubscription(GAME_UPDATED, { variables: { id: gameId } });
+  const game = subData?.gameUpdated;
 
-  // hydrate from server-fetched data on first render
-  useEffect(() => {
-    if (initialGame) {
-      dispatch(setGame(initialGame));
-    } else if (!backendDown) {
-      // If no initial game but backend is up, try to fetch it
-      console.warn("No initial game provided, will fetch from stream");
-    }
-  }, [initialGame, dispatch, backendDown]);
+  const [playCard] = useMutation(PLAY_CARD);
+  const [drawCard] = useMutation(DRAW_CARD);
+  const [sayUno] = useMutation(SAY_UNO);
 
-  // start live subscription stream
-  useEffect(() => {
-    if (gameId) startGameStream(gameId);
-  }, [gameId]);
-
-  if (backendDown) {
-    return (
-      <div>
-        <h2>UNO Game</h2>
-        <p style={{ color: "#c0392b" }}>
-          Backend unreachable. Start the Next.js server and refresh.
-        </p>
-      </div>
-    );
-  }
-
-  // If initialGame is null but backend is fine, wait for SSE stream to load it
   if (!game) {
     return (
       <div>
@@ -61,7 +36,7 @@ export default function GameClient({ gameId, initialGame, backendDown }: { gameI
         ? prompt("Choose color (red, blue, green, yellow):") || undefined
         : undefined;
 
-    apiPlayCard(gameId, playerId, index, chosenColor);
+    playCard({ variables: { gameId, playerId, cardIndex: index, chosenColor } });
   }
 
   function draw() {
@@ -69,7 +44,7 @@ export default function GameClient({ gameId, initialGame, backendDown }: { gameI
       alert("No player ID found. Join the game first.");
       return;
     }
-    apiDrawCard(gameId, playerId);
+    drawCard({ variables: { gameId, playerId } });
   }
 
   return (
@@ -156,7 +131,10 @@ export default function GameClient({ gameId, initialGame, backendDown }: { gameI
       <div style={{ fontSize: "24px", marginBottom: "10px" }}>
         {game.direction === 1 ? "➡️ Clockwise" : "⬅️ Counterclockwise"}
       </div>
-      <button onClick={draw}>Draw Card</button>
+      <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+        <button onClick={draw}>Draw Card</button>
+        <button onClick={() => sayUno({ variables: { gameId, playerId } })}>UNO!</button>
+      </div>
     </div>
   );
 }

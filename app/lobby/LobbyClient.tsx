@@ -1,23 +1,24 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useDispatch } from "react-redux";
-import { setPlayerId } from "../lib/redux/playerSlice";
-import { apiCreateGame, apiJoinGame, apiGetGames } from "../lib/api/uno";
+import { useMutation, useQuery } from "@apollo/client";
+import { CREATE_GAME, JOIN_GAME, GET_GAMES } from "../lib/operations";
 
 type Game = { id: string; players: { id: string; name: string }[] };
 
 export default function LobbyClient({ initialGames, backendDown }: { initialGames: Game[]; backendDown?: boolean }) {
   const router = useRouter();
-  const dispatch = useDispatch();
+  const [createGame] = useMutation(CREATE_GAME);
+  const [joinGame] = useMutation(JOIN_GAME);
+  const { data: gamesData, refetch } = useQuery(GET_GAMES, { fetchPolicy: "network-only" });
   const [games, setGames] = useState<Game[]>(initialGames);
   const [loading, setLoading] = useState(false);
 
   async function refresh() {
     setLoading(true);
     try {
-      const result = await apiGetGames();
-      setGames(result);
+      const res = await refetch();
+      setGames(res.data.games ?? gamesData?.games ?? []);
     } finally {
       setLoading(false);
     }
@@ -27,25 +28,21 @@ export default function LobbyClient({ initialGames, backendDown }: { initialGame
     const name = prompt("Enter your name:");
     if (!name) return;
 
-    const newGame = await apiCreateGame();
-    const joined = await apiJoinGame(newGame.id, name);
+    const { data: createData } = await createGame({ variables: { expectedPlayers: 2 } });
+    const gameId = createData.createGame.id;
+    const { data: joinData } = await joinGame({ variables: { gameId, name } });
+    const viewerId = joinData.joinGame.viewerId;
 
-    const me = joined.players.find((p: any) => p.name === name);
-    if (me) dispatch(setPlayerId(me.id));
-
-    router.push(`/game/${newGame.id}`);
+    router.push(`/game/${gameId}?viewerId=${viewerId}`);
   }
 
   async function handleJoin(gameId: string) {
     const name = prompt("Enter your name:");
     if (!name) return;
 
-    const joined = await apiJoinGame(gameId, name);
-
-    const me = joined.players.find((p: any) => p.name === name);
-    if (me) dispatch(setPlayerId(me.id));
-
-    router.push(`/game/${gameId}`);
+    const { data } = await joinGame({ variables: { gameId, name } });
+    const viewerId = data.joinGame.viewerId;
+    router.push(`/game/${gameId}?viewerId=${viewerId}`);
   }
 
   useEffect(() => {
@@ -67,7 +64,7 @@ export default function LobbyClient({ initialGames, backendDown }: { initialGame
       {loading && <p>Loading games...</p>}
 
       <ul>
-        {games?.map((g: any) => (
+        {(gamesData?.games ?? games)?.map((g: any) => (
           <li key={g.id}>
             Game {g.id} ({g.players.length} players)
             <button onClick={() => handleJoin(g.id)}>Join</button>
