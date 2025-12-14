@@ -11,7 +11,7 @@ interface Props {
 
 export default function Card({ color, type, value, back, onClick }: Props) {
   function getCardImage() {
-    if (back) return "/cards/Back.png";
+    if (back) return "/cards/Deck.png";
     if (!color || !type) return "/cards/Deck.png";
 
     const c = color.charAt(0).toUpperCase() + color.slice(1).toLowerCase();
@@ -33,7 +33,7 @@ export default function Card({ color, type, value, back, onClick }: Props) {
         return `/cards/Wild.png`;
       case "wilddrawfour":
       case "wild_draw4":
-        return `/cards/Wild_DrawFour.png`;
+        return `/cards/Wild_Draw.png`;
       default:
         return "/cards/Deck.png";
     }

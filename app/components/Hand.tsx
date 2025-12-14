@@ -8,6 +8,8 @@ interface Props {
 }
 
 export default function Hand({ hand, onPlay }: Props) {
+  if (!hand || hand.length === 0) return null;
+  
   return (
     <div style={{ display: "flex", flexWrap: "wrap", marginTop: "20px" }}>
       {hand.map((card, i) => (

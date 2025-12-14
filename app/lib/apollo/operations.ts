@@ -45,10 +45,12 @@ export const GAME_UPDATED = gql`
     gameUpdated(id: $id) {
       id
       status
-      players { id name handCount }
+      players { id name handCount hand { color type value } }
       topCard { color type value }
       activeColor
+      direction
       currentPlayer { id name }
+      winner
     }
   }
 `;
@@ -56,5 +58,20 @@ export const GAME_UPDATED = gql`
 export const GET_GAMES = gql`
   query GetGames {
     games { id players { id name } status }
+  }
+`;
+
+export const GET_GAME = gql`
+  query GetGame($id: ID!) {
+    game(id: $id) {
+      id
+      status
+      players { id name handCount hand { color type value } }
+      topCard { color type value }
+      activeColor
+      direction
+      currentPlayer { id name }
+      winner
+    }
   }
 `;

@@ -1,17 +1,18 @@
 "use client";
 import React from "react";
 import { useSearchParams } from "next/navigation";
-import { useMutation, useSubscription } from "@apollo/client/react";
-import { DRAW_CARD, PLAY_CARD, GAME_UPDATED, SAY_UNO } from "../../lib/apollo/operations";
-import Hand from "../../components/Hand";
-import Card from "../../components/Card";
+import { useMutation, useQuery, useSubscription } from "@apollo/client/react";
+import { DRAW_CARD, PLAY_CARD, GAME_UPDATED, SAY_UNO, GET_GAME } from "../../../lib/apollo/operations";
+import Hand from "../../../components/Hand";
+import Card from "../../../components/Card";
 
 export default function GameClient({ gameId }: { gameId: string }) {
   const params = useSearchParams();
   const playerId = params.get("viewerId") || "";
 
+  const { data: queryData } = useQuery(GET_GAME, { variables: { id: gameId } });
   const { data: subData } = useSubscription(GAME_UPDATED, { variables: { id: gameId } });
-  const game = (subData as any)?.gameUpdated;
+  const game = (subData as any)?.gameUpdated || (queryData as any)?.game;
 
   const [playCard] = useMutation(PLAY_CARD);
   const [drawCard] = useMutation(DRAW_CARD);

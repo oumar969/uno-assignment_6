@@ -43,11 +43,11 @@ async function start() {
     },
   });
 
-  console.log(`🚀 Server running at: ${url}`);
+  console.log(` Server running at: ${url}`);
   // Start the raw http server used by the websocket server on a different port
   const WS_PORT = 4001;
   httpServer.listen(WS_PORT, () => {
-    console.log(`🔗 Subscriptions (ws) listening at: ws://localhost:${WS_PORT}/graphql`);
+    console.log(` Subscriptions (ws) listening at: ws://localhost:${WS_PORT}/graphql`);
   });
 }
 

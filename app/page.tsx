@@ -16,24 +16,10 @@ export default function Home() {
           >
             Go to Lobby
           </a>
-          <a
-            className="rounded border px-4 py-2 text-gray-800"
-            href="https://nextjs.org/docs"
-            target="_blank"
-            rel="noreferrer"
-          >
-            Next.js Docs
-          </a>
+         
         </div>
       </section>
-      <section className="space-y-2 text-gray-700">
-        <h2 className="text-xl font-semibold">Rendering choices</h2>
-        <ul className="list-disc pl-6 space-y-1">
-          <li>Home: static (SSG)</li>
-          <li>Lobby: SSR (server component fetch with no-store)</li>
-          <li>Game: SSR-prefetch + client hydration + live subscription</li>
-        </ul>
-      </section>
+     
     </main>
   );
 }

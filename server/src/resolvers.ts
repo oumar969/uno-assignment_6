@@ -1,15 +1,14 @@
 import { v4 as uuidv4 } from "uuid";
 import { withFilter } from "graphql-subscriptions";
 import { pubsub } from "./pubsub";
-
 import {
   createFunctionalGame,
   playFunctionalCard,
   drawFunctionalCard,
   sayUNO,
   Color,
-  Uno,
-} from "../../shared/uno";
+  Uno
+} from "../../shared";
 
 // Types for game management
 type PendingGame = {
@@ -69,7 +68,7 @@ const resolvers = {
       }
 
       // Check if we should start the game
-      if (game.state === "pending" && game.players.length >= game.expectedPlayers) {
+      if (game.state === "pending" && game.players.length >= 2) {
         console.log(`🚀 Starting game ${gameId} with ${game.players.length} players`);
 
         // Convert pending game to active game
@@ -102,7 +101,7 @@ const resolvers = {
     playCard: (_: any, { gameId, playerId, cardIndex, chosenColor }: any) => {
       const game = games.find((g) => g.id === gameId) as IndexedUno | undefined;
       if (!game) throw new Error("Game not found");
-      if (game.state === "pending") throw new Error("Game has not started yet");
+      if (game.state === "pending" as any) throw new Error("Game has not started yet");
 
       const player = game.players.find((p) => p.id === playerId);
       if (!player) throw new Error("Player not found");
@@ -121,7 +120,7 @@ const resolvers = {
 
       game.state = updated;
 
-      console.log(`🎴 ${player.name} played card ${cardIndex}`);
+      console.log(`${player.name} played card ${cardIndex}`);
 
       pubsub.publish("GAME_UPDATED", { gameUpdated: game });
 
@@ -131,7 +130,7 @@ const resolvers = {
     drawCard: (_: any, { gameId, playerId }: any) => {
       const game = games.find((g) => g.id === gameId) as IndexedUno | undefined;
       if (!game) throw new Error("Game not found");
-      if (game.state === "pending") throw new Error("Game has not started yet");
+      if (game.state === "pending" as any) throw new Error("Game has not started yet");
 
       const player = game.players.find((p) => p.id === playerId);
       if (!player) throw new Error("Player not found");
@@ -152,7 +151,7 @@ const resolvers = {
     sayUNO: (_: any, { gameId, playerId }: any) => {
       const game = games.find((g) => g.id === gameId) as IndexedUno | undefined;
       if (!game) throw new Error("Game not found");
-      if (game.state === "pending") throw new Error("Game has not started yet");
+      if (game.state === "pending" as any) throw new Error("Game has not started yet");
 
       const player = game.players.find((p) => p.id === playerId);
       if (!player) throw new Error("Player not found");
@@ -211,7 +210,7 @@ const resolvers = {
 
     winner: (game: GameEntry) => {
       if (game.state === "pending") return null;
-      const winner = game.state.players.find((p) => p.hand.length === 0);
+      const winner = game.state.players.find((p: any) => p.hand.length === 0);
       if (!winner) return null;
       return game.players.find((p) => p.name === winner.name) ?? null;
     },
@@ -222,7 +221,7 @@ const resolvers = {
       const game = games.find((g) => g.id === info.variableValues.id);
       if (!game || game.state === "pending") return [];
 
-      const unoPlayer = game.state.players.find((p) => p.name === player.name);
+      const unoPlayer = game.state.players.find((p: any) => p.name === player.name);
 
       if (!unoPlayer) return [];
 
