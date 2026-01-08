@@ -52,7 +52,7 @@ export default function GameClient({ gameId }: { gameId: string }) {
     <div>
       <h2>UNO Game {game.id}</h2>
 
-      {game.winner && <h1>🎉 {game.winner} won the game!</h1>}
+      {game.winner && <h1> {game.winner} won the game!</h1>}
       <h3>Players:</h3>
 
       <div style={{ display: "flex", gap: 20, flexWrap: "wrap" }}>
@@ -130,7 +130,7 @@ export default function GameClient({ gameId }: { gameId: string }) {
 
       <h3>Direction:</h3>
       <div style={{ fontSize: "24px", marginBottom: "10px" }}>
-        {game.direction === 1 ? "➡️ Clockwise" : "⬅️ Counterclockwise"}
+        {game.direction === 1 ? " Clockwise" : " Counterclockwise"}
       </div>
       <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
         <button onClick={draw}>Draw Card</button>
