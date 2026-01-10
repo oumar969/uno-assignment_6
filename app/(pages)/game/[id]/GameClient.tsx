@@ -1,10 +1,16 @@
 "use client";
-import React from "react";
 import { useSearchParams } from "next/navigation";
 import { useMutation, useQuery, useSubscription } from "@apollo/client/react";
 import { DRAW_CARD, PLAY_CARD, GAME_UPDATED, SAY_UNO, GET_GAME } from "../../../lib/apollo/operations";
 import Hand from "../../../components/Hand";
 import Card from "../../../components/Card";
+
+//import { useGameState } from "../../../lib/rx/useGameState";
+//Server side rendering 
+//next.js
+//sertver-side rendering (SSR) og client-side rendering (CSR).
+//web application framework built on top of React.js
+//static vs dynamic rendering
 
 export default function GameClient({ gameId }: { gameId: string }) {
   const params = useSearchParams();
@@ -13,7 +19,7 @@ export default function GameClient({ gameId }: { gameId: string }) {
   const { data: queryData } = useQuery(GET_GAME, { variables: { id: gameId } });
   const { data: subData } = useSubscription(GAME_UPDATED, { variables: { id: gameId } });
   const game = (subData as any)?.gameUpdated || (queryData as any)?.game;
-
+  //  const game = useGameState(gameId);
   const [playCard] = useMutation(PLAY_CARD);
   const [drawCard] = useMutation(DRAW_CARD);
   const [sayUno] = useMutation(SAY_UNO);

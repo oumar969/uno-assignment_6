@@ -1,9 +1,9 @@
 "use client";
-import React, { useMemo } from "react";
 import { ApolloClient, InMemoryCache, HttpLink, split } from "@apollo/client";
 import { GraphQLWsLink } from "@apollo/client/link/subscriptions";
 import { createClient } from "graphql-ws";
 import { getMainDefinition } from "@apollo/client/utilities";
+import { useMemo } from "react";// React hook for memoization
 
 export function createApolloClient() {
   // safe access to localStorage
