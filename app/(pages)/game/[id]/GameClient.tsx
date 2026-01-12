@@ -8,9 +8,9 @@ import Card from "../../../components/Card";
 //import { useGameState } from "../../../lib/rx/useGameState";
 //Server side rendering 
 //next.js
-//sertver-side rendering (SSR) og client-side rendering (CSR).
 //web application framework built on top of React.js
-//static vs dynamic rendering
+//sertver-side rendering (SSR) og client-side rendering (CSR).
+//Client Components can use state, hooks, event handlers, and browser APIs.
 
 export default function GameClient({ gameId }: { gameId: string }) {
   const params = useSearchParams();

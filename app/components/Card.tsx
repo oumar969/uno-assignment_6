@@ -1,5 +1,7 @@
+//Server side rendering 
+//next.js
+//static vs dynamic rendering
 "use client";
-import React from "react";
 
 interface Props {
   color: string | null;
