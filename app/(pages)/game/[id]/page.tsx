@@ -1,7 +1,7 @@
-//SSR generates HTML on the server and sends it to the browser
+//Next.js generates HTML for the route on each request
 //CSR generates HTML in the browser using JavaScript
 //SC are default in Next.js App Router
-//SC cannot use hooks like useState or useEffect
+//No hooks like useState or useEffect
 //SC can fetch data directly from the server
 import GameClientWrapper from "./GameClientWrapper";
 

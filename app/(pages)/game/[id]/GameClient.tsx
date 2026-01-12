@@ -1,15 +1,12 @@
 "use client";
+//import { useGameState } from "../../../lib/rx/useGameState";
 import { useSearchParams } from "next/navigation";
 import { useMutation, useQuery, useSubscription } from "@apollo/client/react";
 import { DRAW_CARD, PLAY_CARD, GAME_UPDATED, SAY_UNO, GET_GAME } from "../../../lib/apollo/operations";
 import Hand from "../../../components/Hand";
 import Card from "../../../components/Card";
 
-//import { useGameState } from "../../../lib/rx/useGameState";
-//Server side rendering 
-//next.js
 //web application framework built on top of React.js
-//sertver-side rendering (SSR) og client-side rendering (CSR).
 //Client Components can use state, hooks, event handlers, and browser APIs.
 
 export default function GameClient({ gameId }: { gameId: string }) {
