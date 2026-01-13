@@ -6,7 +6,8 @@ import { CREATE_GAME, JOIN_GAME, GET_GAMES } from "../../lib/apollo/operations";
 import "./LobbyClient.css";
 
 type Game = { id: string; players: { id: string; name: string }[] };
-
+//backendDown prop if the backend is unreachable
+//initialGames prop to populate the lobby initially
 export default function LobbyClient({ initialGames, backendDown }: { initialGames: Game[]; backendDown?: boolean }) {
   const router = useRouter();
   const [createGame] = useMutation(CREATE_GAME);

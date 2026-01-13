@@ -6,7 +6,7 @@ import { DRAW_CARD, PLAY_CARD, GAME_UPDATED, SAY_UNO, GET_GAME } from "../../../
 import Hand from "../../../components/Hand";
 import Card from "../../../components/Card";
 
-//web application framework built on top of React.js
+//next.js web application framework built on top of React.js use it to create server and client components
 //Client Components can use state, hooks, event handlers, and browser APIs.
 
 export default function GameClient({ gameId }: { gameId: string }) {

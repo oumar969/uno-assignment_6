@@ -1,3 +1,4 @@
+//sets up the ApolloProvider globally so all pages/components can access GraphQL hooks
 "use client";
 import React from "react";
 import { ApolloProvider } from "@apollo/client/react";
